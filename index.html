@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Memory Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>Emoji Memory Game</h1>
+        </header>
+        <main>
+            <section class="game-info">
+                <div id="timer">Time: <span>60</span>s</div>
+                <button id="restart-btn" aria-label="Restart Game">Restart Game</button>
+            </section>
+            <div id="game-board" class="game-board" role="grid" aria-label="Emoji Memory Game Board"></div>
+            <div id="status-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+        </main>
+
+        <!-- Victory Modal -->
+        <div id="victory-modal" class="modal" role="dialog" aria-labelledby="victory-title" aria-describedby="victory-message" aria-hidden="true">
+            <div class="modal-content">
+                <h2 id="victory-title">🎉 Victory! 🎉</h2>
+                <p id="victory-message">You matched all the emojis!</p>
+                <button id="victory-restart-btn" aria-label="Play Again">Play Again</button>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="game-over-modal" class="modal" role="dialog" aria-labelledby="gameover-title" aria-describedby="gameover-message" aria-hidden="true">
+            <div class="modal-content">
+                <h2 id="gameover-title">Game Over! 😭</h2>
+                <p id="gameover-message">Time ran out. Try again!</p>
+                <button id="gameover-restart-btn" aria-label="Restart Game">Restart Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
