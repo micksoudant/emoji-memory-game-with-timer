@@ -57,6 +57,10 @@ function generateCards() {
     cards = []; // Clear cards array for a new game
     matchedPairs = 0; // Reset matched pairs
     gameStarted = false; // Reset game started flag
+    lockBoard = false; // Unlock board
+    hasFlippedCard = false; // Reset flipped card state
+    firstCard = null;
+    secondCard = null;
 
     shuffledEmojis.forEach((emoji, index) => {
         const card = document.createElement('button');
@@ -72,7 +76,6 @@ function generateCards() {
 
         const cardBack = document.createElement('div');
         cardBack.classList.add('card-face', 'card-back');
-        // You can add a default back content if desired, e.g., a question mark or logo
 
         card.appendChild(cardFront);
         card.appendChild(cardBack);
@@ -84,6 +87,78 @@ function generateCards() {
 
 function addCardEventListeners() {
     cards.forEach(card => card.addEventListener('click', flipCard));
+}
+
+function flipCard() {
+    if (lockBoard) return;
+    if (this === firstCard) return; // Prevent clicking the same card twice
+
+    this.classList.add('flipped');
+    this.setAttribute('aria-label', `Card ${this.dataset.index + 1}, ${this.dataset.emoji}`);
+    statusAnnouncer.textContent = `Card flipped: ${this.dataset.emoji}`;
+
+    if (!gameStarted) {
+        startTimer();
+        gameStarted = true;
+    }
+
+    if (!hasFlippedCard) {
+        // First card flipped
+        hasFlippedCard = true;
+        firstCard = this;
+        return;
+    }
+
+    // Second card flipped
+    secondCard = this;
+    checkForMatch();
+}
+
+function checkForMatch() {
+    let isMatch = firstCard.dataset.emoji === secondCard.dataset.emoji;
+
+    if (isMatch) {
+        disableCards();
+        matchedPairs++;
+        statusAnnouncer.textContent = `Match found! ${firstCard.dataset.emoji} and ${secondCard.dataset.emoji}. Total matched pairs: ${matchedPairs}.`;
+        if (matchedPairs === emojis.length) {
+            // All pairs matched - Victory!
+            clearInterval(timerInterval);
+            setTimeout(() => {
+                victoryModal.classList.add('visible');
+                victoryModal.setAttribute('aria-hidden', 'false');
+                triggerVictoryConfetti();
+                statusAnnouncer.textContent = 'Congratulations! You won the game!';
+            }, 500);
+        }
+    } else {
+        unflipCards();
+        statusAnnouncer.textContent = `No match. ${firstCard.dataset.emoji} and ${secondCard.dataset.emoji} do not match.`;
+    }
+}
+
+function disableCards() {
+    firstCard.removeEventListener('click', flipCard);
+    secondCard.removeEventListener('click', flipCard);
+    firstCard.classList.add('matched');
+    secondCard.classList.add('matched');
+    resetBoard();
+}
+
+function unflipCards() {
+    lockBoard = true;
+    setTimeout(() => {
+        firstCard.classList.remove('flipped');
+        secondCard.classList.remove('flipped');
+        firstCard.setAttribute('aria-label', `Card ${firstCard.dataset.index + 1}, face down`);
+        secondCard.setAttribute('aria-label', `Card ${secondCard.dataset.index + 1}, face down`);
+        resetBoard();
+    }, 1000);
+}
+
+function resetBoard() {
+    [hasFlippedCard, lockBoard] = [false, false];
+    [firstCard, secondCard] = [null, null];
 }
 
 // Initial game setup
