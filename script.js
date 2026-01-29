@@ -66,6 +66,12 @@ function generateCards() {
     timeLeft = 60;
     timerDisplay.textContent = timeLeft;
 
+    // Hide modals and reset their aria-hidden state
+    victoryModal.classList.remove('visible');
+    victoryModal.setAttribute('aria-hidden', 'true');
+    gameOverModal.classList.remove('visible');
+    gameOverModal.setAttribute('aria-hidden', 'true');
+
     shuffledEmojis.forEach((emoji, index) => {
         const card = document.createElement('button');
         card.classList.add('card');
@@ -87,6 +93,7 @@ function generateCards() {
         cards.push(card); // Store card elements for later access
     });
     addCardEventListeners();
+    statusAnnouncer.textContent = 'New game started. Find matching emoji pairs.';
 }
 
 function addCardEventListeners() {
@@ -99,7 +106,7 @@ function flipCard() {
 
     this.classList.add('flipped');
     this.setAttribute('aria-label', `Card ${this.dataset.index + 1}, ${this.dataset.emoji}`);
-    statusAnnouncer.textContent = `Card flipped: ${this.dataset.emoji}`;
+    statusAnnouncer.textContent = `Card ${parseInt(this.dataset.index) + 1} flipped, showing ${this.dataset.emoji}`;
 
     if (!gameStarted) {
         startTimer();
@@ -137,7 +144,7 @@ function checkForMatch() {
         }
     } else {
         unflipCards();
-        statusAnnouncer.textContent = `No match. ${firstCard.dataset.emoji} and ${secondCard.dataset.emoji} do not match.`;
+        statusAnnouncer.textContent = `No match. Cards reset.`;
     }
 }
 
@@ -146,6 +153,11 @@ function disableCards() {
     secondCard.removeEventListener('click', flipCard);
     firstCard.classList.add('matched');
     secondCard.classList.add('matched');
+    firstCard.setAttribute('aria-label', `Card ${firstCard.dataset.index + 1}, matched ${firstCard.dataset.emoji}`);
+    secondCard.setAttribute('aria-label', `Card ${secondCard.dataset.index + 1}, matched ${secondCard.dataset.emoji}`);
+    firstCard.setAttribute('aria-pressed', 'true');
+    secondCard.setAttribute('aria-pressed', 'true');
+
     resetBoard();
 }
 
@@ -175,9 +187,37 @@ function startTimer() {
             gameOverModal.setAttribute('aria-hidden', 'false');
             statusAnnouncer.textContent = 'Game over! Time ran out.';
             lockBoard = true; // Lock the board when game is over
+            // Optionally disable all card clicks on game over
+            cards.forEach(card => card.removeEventListener('click', flipCard));
         }
     }, 1000);
 }
+
+function restartGame() {
+    clearInterval(timerInterval);
+    timeLeft = 60;
+    timerDisplay.textContent = timeLeft;
+    matchedPairs = 0;
+    gameStarted = false;
+    lockBoard = false;
+    firstCard = null;
+    secondCard = null;
+    hasFlippedCard = false;
+
+    victoryModal.classList.remove('visible');
+    victoryModal.setAttribute('aria-hidden', 'true');
+    gameOverModal.classList.remove('visible');
+    gameOverModal.setAttribute('aria-hidden', 'true');
+
+    generateCards();
+    addCardEventListeners(); // Re-add event listeners for new cards
+    statusAnnouncer.textContent = 'Game restarted. Find matching emoji pairs.';
+}
+
+// Event Listeners for restart buttons
+restartBtn.addEventListener('click', restartGame);
+victoryRestartBtn.addEventListener('click', restartGame);
+gameOverRestartBtn.addEventListener('click', restartGame);
 
 // Initial game setup
 generateCards();
