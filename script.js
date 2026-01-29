@@ -61,6 +61,10 @@ function generateCards() {
     hasFlippedCard = false; // Reset flipped card state
     firstCard = null;
     secondCard = null;
+    // Reset timer display and clear interval
+    clearInterval(timerInterval);
+    timeLeft = 60;
+    timerDisplay.textContent = timeLeft;
 
     shuffledEmojis.forEach((emoji, index) => {
         const card = document.createElement('button');
@@ -159,6 +163,20 @@ function unflipCards() {
 function resetBoard() {
     [hasFlippedCard, lockBoard] = [false, false];
     [firstCard, secondCard] = [null, null];
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            gameOverModal.classList.add('visible');
+            gameOverModal.setAttribute('aria-hidden', 'false');
+            statusAnnouncer.textContent = 'Game over! Time ran out.';
+            lockBoard = true; // Lock the board when game is over
+        }
+    }, 1000);
 }
 
 // Initial game setup
